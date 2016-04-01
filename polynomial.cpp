@@ -6,58 +6,108 @@
 //  Copyright © 2016 Josh. All rights reserved.
 //
 
-#include "Polynomial.h"
+#include "polynomial.h"
 #include <iostream>
 #include <sstream>
+#include <regex>
 
 using namespace std;
 
 Polynomial::Polynomial() : highDeg(0) {}
 
+//  This private method was created simply to remove repeated lines of code. It prompts the user to enter
+//a number for the given header, which is either coefficient or power. It repeatedly asks the user for
+//input until given a correct string of input. I import regex and use a simple search that checks the
+//string for a 0 or 1 '-' using ? then matches 1 or more numbers from 0 to 9 and the dollar sign forces
+//the match to occur at the end of the string. If all of these requirements are not met then the search
+//returns false. The second if statement is only for powers since they cannot be negative numbers according
+//to the assignment rules.
+
+int Polynomial::getInfoPoly(string header){
+    cout << "Enter a number for the " << header << ": ";
+    bool check = true;
+    string str;
+    int number = 0;
+    regex re("-?[0-9]+$");
+    while(check) {
+        getline(cin, str);
+        if(!regex_search(str,re)) {
+            cin.clear();
+            cout << "Enter a valid number for the " << header << ": ";
+        }
+        else if(header == "power") {
+            if(stoi(str) < 0) {
+                cin.clear();
+                cout << "Enter a valid number for the " << header << ": ";
+            }
+            else {
+                number = stoi(str);
+                check = false;
+            }
+        }
+        else {
+            number = stoi(str);
+            check = false;
+        }
+    }
+    return number;
+}
+
+//  This public method prompts the user to enter a number for the coefficient and power then maps them
+//to a map data structure. If the polynomial degree already exists it just adds the current coefficient
+//to the old one. Then asks to continue.
+
 void Polynomial::readFromUser() {
     bool end = true;
     while(end) {
-        int deg = -1;
-        int coeF = 0;
-        cout << "Enter a number for the coefficient: ";
-        while(!(cin>>coeF) || (coeF < 1)){
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');  //Ignore anything other than integers
-            cout << "Enter a valid number for the coefficient: ";
-        }
-        cin.clear();
-        cout << "Enter a number for the coefficient's power: ";
-        while(!(cin>>deg) || (deg < 0)){
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');  //Ignore anything other than integers
-            cout << "Enter a valid number for the power: ";
-        }
-        cin.clear();
+        int coeff = getInfoPoly("coefficient");
+        int deg = getInfoPoly("power");
         if(highDeg < deg) {
             highDeg = deg;
         }
-        poly[deg] = coeF;
+        if(poly.count(deg) != 0) {
+            poly[deg] += coeff;
+        }
+        else {
+            poly[deg] = coeff;
+        }
         cout << "Continue? [Y/N]: ";
         string temp;
         cin >> temp;
         if(temp != "Y") {
             end = false;
         }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
+//This method returns the highest degree of the polynomial
+
 int Polynomial::degree() const { return highDeg;}
 
-int Polynomial::coefficient(int power) {return poly[power];}
-
-void Polynomial::changeCoefficient(int newC,int power) {
-    if(poly.count(power) != 0) {
-        poly[power] = newC;
+//This method return the coefficient of the specified power, and 0 otherwise
+int Polynomial::coefficient(int power) {
+    if(poly.count(power) == 0) {
+        return 0;
     }
     else {
-        cout <<  "Power does not exist." << endl;
+        return poly[power];
     }
 }
 
+//  This method checks to see if the power exists, if it does it returns the
+//corresponding coefficient. Otherwise it returns that the string doesn't
+//exist
+
+void Polynomial::changeCoefficient(int newC,int power) {
+    if (poly.count(power) == 0) {
+        cout << "The power doesn't exist" << endl;
+    }
+    else {
+        poly[power] = newC;
+    }
+}
+//  This method multiplies the entire polynomial by a specified constant by simply iterating
+//over the map
 void Polynomial::multyPoly(int num) {
     for(auto& keyV : poly) {
         int temp = keyV.second;
@@ -66,7 +116,12 @@ void Polynomial::multyPoly(int num) {
     }
 }
 
-Polynomial Polynomial::operator+(const Polynomial& otherPoly) const {
+//  This overloaded operator takes two polynomials and adds each powers coefficient with the other.
+//This is done by checking if the first value of the key equals the second, and if so then add the
+//coefficients of each. If the power of the first polynomial is greater then map that polynomial
+//increase its iterator and repeat until one iterator is at the end. Once one iterator is at its end
+//then the other iterator fills the remaining elements into the map
+Polynomial Polynomial::operator+(Polynomial& otherPoly) const {
     Polynomial newPoly;
     auto iter1 = poly.begin();
     auto iter2 = otherPoly.poly.begin();
@@ -101,19 +156,34 @@ Polynomial Polynomial::operator+(const Polynomial& otherPoly) const {
     newPoly.highDeg = newPoly.poly.begin()->first;
     return newPoly;
 }
+
+//  This method prints out the polynomial with correct formatting
+
 void Polynomial::print() const {
     string polyS;
     for(auto& keyV : poly) {
-        polyS += to_string(keyV.second);
-        polyS += "x^";
-        polyS += to_string(keyV.first);
-        polyS += " + ";
+        if(keyV.first == 0) {
+            polyS += to_string(keyV.second);
+        }
+        else {
+            polyS += to_string(keyV.second);
+            polyS += "x^";
+            polyS += to_string(keyV.first);
+            polyS += " + ";
+        }
     }
-    polyS.pop_back();
-    polyS.pop_back();
+    size_t ePos = polyS.find_last_not_of(" \t");
+    if( string::npos != ePos )
+    {
+        polyS = polyS.substr(0, ePos+1);
+    }
+    if(polyS.back() == '+') {
+        polyS.back() = ' ';
+    }
     cout << polyS;
     cout << endl;
 }
+//This overloaded operator simply negates every coefficient in the polynomial
 Polynomial Polynomial::operator-() const{
     Polynomial newPoly;
     newPoly.highDeg = poly.begin()->first;
