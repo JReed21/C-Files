@@ -18,17 +18,17 @@ Polynomial::Polynomial() : highDeg(0) {}
 //  This private method was created simply to remove repeated lines of code. It prompts the user to enter
 //a number for the given header, which is either coefficient or power. It repeatedly asks the user for
 //input until given a correct string of input. I import regex and use a simple search that checks the
-//string for a 0 or 1 '-' using ? then matches 1 or more numbers from 0 to 9 and the dollar sign forces
-//the match to occur at the end of the string. If all of these requirements are not met then the search
-//returns false. The second if statement is only for powers since they cannot be negative numbers according
-//to the assignment rules.
+//string for a 0 or 1 '-' using ? then matches 1 or more numbers from 0 to 9, the anchor forces the match to
+//begin at the beginning of the string, and the dollar sign forcesthe match to occur at the end of the string. If
+//all of these requirements are not met then the searchreturns false. The second if statement is only for powers
+//since they cannot be negative numbers according to the assignment rules.
 
 int Polynomial::getInfoPoly(string header){
     cout << "Enter a number for the " << header << ": ";
     bool check = true;
     string str;
     int number = 0;
-    regex re("-?[0-9]+$");
+    regex re("^-?[0-9]+$");
     while(check) {
         getline(cin, str);
         if(!regex_search(str,re)) {
