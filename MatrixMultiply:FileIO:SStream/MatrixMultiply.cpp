@@ -52,7 +52,7 @@ void getDimensions(int arr[]) {
  column of the second matrix and iterates horizontally across one row of the first matrix. Both the for
  loops simply iterate over column and row size of the new matrix.
  */
-vector<vector<int>> matrixMult(const vector<vector<int>>& matrix1,const vector<vector<int>>& matrix2) {
+vector<vector<int>> matrixMult(vector<vector<int>>& matrix1,vector<vector<int>>& matrix2) {
     vector<vector<int>> newMatrix(matrix1.size(),vector<int>(matrix1.size()));
     int summ = 0;
     for(int i = 0; i < matrix1.size();i++){
@@ -70,7 +70,7 @@ vector<vector<int>> matrixMult(const vector<vector<int>>& matrix1,const vector<v
 }
 /* This method simply loops through the matrix printing it's contents
 */
-void printMatrix(const vector<vector<int>>& matrix) {
+void printMatrix(vector<vector<int>>& matrix) {
     for (int row = 0; row < matrix.size(); row++) {
         for (int col = 0; col < matrix[0].size(); col++) {
             if(col == 0) {
